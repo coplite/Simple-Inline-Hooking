@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <iostream>
 
+// g++ trampoline.cpp -o trampoline.exe -masm=intel
+
 int counter = 0;
 FARPROC address;
 DWORD oldProtect;
@@ -25,23 +27,23 @@ int main()
     address = GetProcAddress(LoadLibraryA("ntdll.dll"), "NtDelayExecution");
     printf("Opcode instruction: 0x%x\n", *(PBYTE)(address));
     
-	  printf("Original Opcode instruction: ");
+	printf("Original Opcode instruction: ");
     for(int i = 0; i < 3; ++i)
     {
         printf("0x%02x ", *(PBYTE)(address+i));
     }
-	  printf("\n");
+	printf("\n");
     VirtualProtect((LPVOID)address, 3, PAGE_EXECUTE_READWRITE, &oldProtect);
     *(PBYTE)(address) = 0xCC; // int3 instruction
     *(PBYTE)(address+1) = 0x90;
-	  *(PBYTE)(address+2) = 0x90;
+	*(PBYTE)(address+2) = 0x90;
 	
-	  printf("Original Opcode instruction: ");
+	printf("Original Opcode instruction: ");
     for(int i = 0; i < 3; ++i)
     {
         printf("0x%02x ", *(PBYTE)(address+i));
     }
-	  printf("\n");
+	printf("\n");
 	
     VirtualProtect((LPVOID)address, 3, oldProtect, &oldProtect);
     
@@ -50,7 +52,10 @@ int main()
     LARGE_INTEGER interval;
     interval.QuadPart = -2 * (1e7);  // sleep for 2 seconds
         
-    Sleep(500);
-  
+    Sleep(1000); 	/* 
+					put any argument here and the execution 
+					will be as long as that function sleeps 
+					proving that this hook works
+					*/
     printf("Counter: %d\n", counter);
 }
